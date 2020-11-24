@@ -1,0 +1,34 @@
+﻿@model IEnumerable<Excel>
+@{ 
+    Layout = null;
+}
+
+    <form asp-controller="Excel" asp-action="Index" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" />
+        <hr />
+        <button type="submit">Carregar</button>
+    </form>
+
+@if (Model.Count() > 0)
+{
+<hr />
+<table cellpadding="0" cellspacing="0" border="1" width="80%" align="center">
+    <tr>
+        <th>#</th>
+        <th>Data de Entrega</th>
+        <th>Nome do Produto</th>
+        <th>Quantidade</th>
+        <th>Valor Unitário</th>
+    </tr>
+    @foreach (Excel excel in Model)
+    {
+        <tr>
+            <td>@excel.Id</td>
+            <td>@excel.DtEntrega</td>
+            <td>@excel.NomeProduto</td>
+            <td>@excel.Quantidade</td>
+            <td>@excel.ValorUnitario</td>
+        </tr>
+    }
+</table>
+}
