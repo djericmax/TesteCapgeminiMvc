@@ -1,15 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using TesteCapgeminiMvc.Models;
 
 namespace TesteCapgeminiMvc.Data
 {
     public class DataContext : DbContext
     {
-        public DbSet<Excel> Excels { get; set; }
+        public DataContext(DbContextOptions<DataContext> options) : base(options) { }
+
+        public DbSet<Excel> Excel { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -18,12 +18,11 @@ namespace TesteCapgeminiMvc.Data
 
         protected override void OnModelCreating(ModelBuilder mb)
         {
+            //mb.Entity<Excel>().HasKey(ToTable("TbExcel").Property(e => e.Id));
             mb.Entity<Excel>().ToTable("TbExcel").Property(e => e.DtEntrega).IsRequired();
             mb.Entity<Excel>().ToTable("TbExcel").Property(e => e.NomeProduto).IsRequired().HasMaxLength(50);
             mb.Entity<Excel>().ToTable("TbExcel").Property(e => e.Quantidade).IsRequired();
             mb.Entity<Excel>().ToTable("TbExcel").Property(e => e.ValorUnitario).IsRequired();
         }
-
-        
     }
 }

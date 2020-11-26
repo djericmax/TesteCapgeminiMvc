@@ -7,38 +7,101 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <title>Teste Capgemini Mvc</title>
 </head>
 <body>
-    @using (Html.BeginForm("Index", "User", FormMethod.Post))
-    {
-    <form asp-controller="Excel" asp-action="Index" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" />
-        <hr />
-        <button type="submit">Carregar</button>
-    </form>
-    }
-    @if (Model.Count() > 0)
-    {
-        <hr />
-        <table cellpadding="0" cellspacing="0" border="1">
-            <tr>
-                <th>Data de Entrega</th>
-                <th>Nome do Produto</th>
-                <th>Quantidade</th>
-                <th>Valor Unitário</th>
-            </tr>
-            @foreach (Excel excel in Model)
-            {
-                <tr>
-                    <td>@excel.Id</td>
-                    <td>@excel.DtEntrega</td>
-                    <td>@excel.NomeProduto</td>
-                    <td>@excel.Quantidade</td>
-                    <td>@excel.ValorUnitario</td>
-                </tr>
-             }
-            </table>
+    <div class="card text-center fixed-top">
+        <div class="card-header">
+            <h3>Teste Capgemini Mvc</h3>
+        </div>
+    </div>
+    <div class="container" style="margin-top: 5%; margin-bottom:10%;">
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Error"].Errors.Count > 0)
+        {
+            <div class="alert alert-Error! danger alert-danger" role="alert">
+                @ViewData.ModelState["Error"].Errors.First().ErrorMessage
+            </div>
         }
-    </body>
+        <div class="card-body">
+            <h5 class="card-title">Objetivos</h5>
+            <p class="card-text">Montar uma API usando C#, preferencialmente ASP.NET Core versão 3.1 ou superior.</p>
+            <p>Clique no botão abaixo para selecionar um arquivo em Excel.</p>
+            <form asp-controller="Excel" asp-action="Index" method="post" enctype="multipart/form-data">
+                <input class="btn btn-info" type="file" name="file" />
+                <hr />
+                <button class="btn btn-success" type="submit">Carregar</button>
+            </form>
+        </div>
+        <div class="container-fluid">
+            @if (Model.Count() > 0)
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Data de Entrega</th>
+                            <th>Nome do Produto</th>
+                            <th>Quantidade</th>
+                            <th>Valor Unitário</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table table-striped">
+                        @foreach (Excel excel in Model)
+                        {
+
+                            <tr>
+                                <td>@excel.DtEntrega</td>
+                                <td>@excel.NomeProduto</td>
+                                <td>@excel.Quantidade</td>
+                                <td id="valunit">@excel.ValorUnitario</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div>
+                    <hr />
+                    <button class="btn btn-outline-dark float-right" type="button" id="Salvar">Salvar</button>
+                </div>
+            }
+        </div>
+        <footer class="fixed-bottom" style="background-color: #fff">
+            <div class="col-md-6 text-muted text-right font-weight-lighter">
+                <small>
+                    Desenvolvido por <a href="https://github.com/djericmax/TesteCapgeminiMvc" title="Clique para ver os arquivos de desenvolvimento no GitHub" target="_blank">Eric Rodolfo de Figueiredo</a>, em .Net Core 3.1.
+                </small>
+            </div>
+        </footer>
+    </div>
+</body>
 </html>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+
+<script>
+    $('#Salvar').click(function () {
+        var model;
+        var modelList = [];
+        $('#myTable tr td').each(function (i, e) {
+            model.DtEntrega = $(e).text();
+            model.NomeProduto = $(e).text();
+            model.Quantidade = $(e).text();
+            model.ValorUnitario = $(e).text();
+            modelList.push(model);
+        });
+        Console.log(modellist);
+        $.ajax({
+            url: '@Url.Action("SalvarBd","Excel")',
+            method: 'post',
+            data: { modelList: modelList },
+            success: function (data) {
+                if (data) {
+                    alert('Dados salvos com sucesso!');
+                }
+                else {
+                    alert('Algo deu errado!')
+                }
+            }
+        }) 
+    })
+</script>

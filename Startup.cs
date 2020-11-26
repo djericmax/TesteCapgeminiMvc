@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TesteCapgeminiMvc.Data;
+using TesteCapgeminiMvc.Models;
 
 namespace TesteCapgeminiMvc
 {
@@ -20,10 +21,12 @@ namespace TesteCapgeminiMvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllersWithViews();
             services.AddDbContext<DataContext>(
                     x => x.UseSqlite(Configuration.GetConnectionString("DefaultConn"))
                 );
-            services.AddControllersWithViews();
+            services.AddScoped<DataContext>();
+            services.AddScoped<Excel>();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,0 +1,15 @@
+string connectionString = configuration.GetConnectionString("DefaultConn");
+            SqliteConnection conn = new SqliteConnection(connectionString);
+            conn.Open();
+            string sqlite = "select count(*) from TbExcel";
+            SqliteCommand com = new SqliteCommand(sqlite, conn);
+            conn.Close();
+            try
+            {
+                var count = (int)com.ExecuteScalar();
+                ViewData["Total"] = count;
+            }
+            catch (Exception ex)
+            {
+                var erro = "erro " + ex;
+            }

@@ -10,31 +10,30 @@ using Microsoft.AspNetCore.Mvc;
 using TesteCapgeminiMvc.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Data.Sqlite;
+using TesteCapgeminiMvc.Data;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace TesteCapgeminiMvc.Controllers
 {
     public class ExcelController : Controller
     {
-        private readonly IConfiguration configuration;
-
-        public ExcelController(IConfiguration config)
+        private readonly DataContext _context;
+        
+        public ExcelController(DataContext context)
         {
-            this.configuration = config;
+            _context = context;
         }
+
+        //private readonly IConfiguration configuration;
+
+        /*    public ExcelController(IConfiguration config)
+             {
+                 this.configuration = config;
+             } */
 
         [HttpGet]
         public IActionResult Index(List<Excel> excels = null)
         {
-            string connectionString = configuration.GetConnectionString("DefaultConn");
-            SqliteConnection conn = new SqliteConnection(connectionString);
-            conn.Open();
-            string sqlite = "select count(*) from TbExcel";
-            SqliteCommand com = new SqliteCommand(sqlite, conn);
-            conn.Close();
-            var count = (int)com.ExecuteScalar();
-
-            ViewData["Total"] = count;
-
             excels = excels == null ? new List<Excel>() : excels;
             return View(new List<Excel>(excels));
         }
@@ -57,30 +56,67 @@ namespace TesteCapgeminiMvc.Controllers
             List<Excel> excels = new List<Excel>();
             var fileName = $"{Directory.GetCurrentDirectory()}{@"\wwwroot\files"}" + "\\" + fName;
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-            using (var stream = System.IO.File.Open(fileName, FileMode.Open, FileAccess.Read))
+            try
             {
-                using (var reader = ExcelReaderFactory.CreateReader(stream))
+                using (var stream = System.IO.File.Open(fileName, FileMode.Open, FileAccess.Read))
                 {
-                    while (reader.Read())
+                    try
                     {
-                        try
+                        using (var reader = ExcelReaderFactory.CreateReader(stream))
                         {
-                            excels.Add(new Excel()
+                            while (reader.Read())
                             {
-                                DtEntrega = Convert.ToDateTime(reader.GetValue(0)),
-                                NomeProduto = reader.GetValue(1).ToString(),
-                                Quantidade = Convert.ToInt32(reader.GetValue(2)),
-                                ValorUnitario = Convert.ToDecimal(reader.GetValue(3))
-                            });
+                                try
+                                {
+                                    excels.Add(new Excel()
+                                    {
+                                        DtEntrega = Convert.ToDateTime(reader.GetValue(0)),
+                                        NomeProduto = reader.GetValue(1).ToString(),
+                                        Quantidade = Convert.ToInt32(reader.GetValue(2)),
+                                        ValorUnitario = Convert.ToDecimal(reader.GetValue(3))
+                                    });
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Tipo de dado não reconhecido. Erro: '{ex}'");
+                                }
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("erro" + ex);
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.TryAddModelError("Error", "Este tipo de arquivo não pode ser carregado. Tente um novo arquivo no formato .xlsx");
+                        //Console.Log($"Tipo de arquivo não aceito. Erro: '{ex}'");
                     }
                 }
             }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Tipo de arquivo não aceito. Erro: '{ex}'");
+            }
             return excels;
+        }
+
+        /// <summary>
+        /// Método que irá receber uma lista do modelo excel e salvar no banco de dados 
+        /// </summary>
+        /// <param name="modelList"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public JsonResult SalvarBd(List<Excel> modelList)
+        {
+            bool erro = false;
+            try
+            {
+                _context.AddRangeAsync(modelList);
+                _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                erro = true;
+            }
+            return Json(erro);
         }
     }
 }
